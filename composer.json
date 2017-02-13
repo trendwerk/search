@@ -1,0 +1,29 @@
+{
+  "name": "trendwerk/search",
+  "description": "Basic extensions for searching in WordPress.",
+  "license": "GPL-3.0+",
+  "authors": [
+    {
+      "name": "Harold Angenent",
+      "email": "harold@trendwerk.nl",
+      "homepage": "https://github.com/haroldangenent"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Trendwerk\\Search\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Trendwerk\\Search\\Test\\": "tests/Search/"
+    }
+  },
+  "require": {
+    "php": ">=5.6"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "5.7.*",
+    "squizlabs/php_codesniffer": "2.*"
+  }
+}
