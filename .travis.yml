@@ -28,3 +28,6 @@ before_script:
 script:
   - vendor/bin/phpcs --standard=PSR2 $(find src tests -name '*.php')
   - vendor/bin/phpunit --coverage-clover clover.xml
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
