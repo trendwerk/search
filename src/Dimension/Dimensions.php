@@ -8,4 +8,9 @@ final class Dimensions
     public function add(Dimension $dimension) {
         $this->dimensions[] = $dimension;
     }
+
+    public function get()
+    {
+        return $this->dimensions;
+    }
 }
