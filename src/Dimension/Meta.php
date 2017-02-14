@@ -18,15 +18,19 @@ final class Meta implements Dimension
         $this->options = $options;
     }
 
-    public function join(wpdb $wpdb)
+    public function join(wpdb $wpdb, $aliasCount = 0)
     {
-        return 'INNER JOIN ' . $wpdb->postmeta . ' AS ' . $this->tableAlias .
-        ' ON (' . $wpdb->posts . '.ID = ' . $this->tableAlias . '.post_id)';
+        $tableAlias = $this->tableAlias . $aliasCount;
+
+        return 'INNER JOIN ' . $wpdb->postmeta . ' AS ' . $tableAlias .
+            ' ON (' . $wpdb->posts . '.ID = ' . $tableAlias . '.post_id)';
     }
 
-    public function search(wpdb $wpdb, array $words)
+    public function search(wpdb $wpdb, $searchWord, $aliasCount = 0)
     {
-        return '(' . $this->tableAlias . '.meta_key = \'' . $this->options['key'] . '\' AND ' .
-        $this->tableAlias . '.meta_value REGEXP \'' . implode('|', $words) . '\')';
+        $tableAlias = $this->tableAlias . $aliasCount;
+
+        return '(' . $tableAlias . '.meta_key = \'' . $this->options['key'] . '\' AND ' .
+            $tableAlias . '.meta_value LIKE \'%' . $searchWord . '%\')';
     }
 }

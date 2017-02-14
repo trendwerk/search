@@ -42,11 +42,15 @@ final class Posts
             return $sql;
         }
 
+        $searchWords = $query->get('search_terms');
+
         $joins = [];
 
-        foreach ($this->dimensions->get() as $dimension) {
-            $dimensionType = get_class($dimension);
-            $joins[$dimensionType] = $dimension->join($this->wpdb);
+        foreach ($searchWords as $wordCount => $searchWord) {
+            foreach ($this->dimensions->get() as $dimension) {
+                $dimensionType = get_class($dimension);
+                $joins[$dimensionType . $wordCount] = $dimension->join($this->wpdb, $wordCount);
+            }
         }
 
         return $sql . ' ' . implode(' ', $joins);
@@ -58,24 +62,25 @@ final class Posts
             return $sql;
         }
 
+        $and = ' AND ';
+        $or = ' OR ';
+
         $searchWords = $query->get('search_terms');
+        $andClauses = array_values(array_filter(explode($and, $sql)));
 
-        $searches = [];
+        foreach ($andClauses as $index => &$clause) {
+            $searchWord = $searchWords[$index];
+            $searches = [];
 
-        foreach ($this->dimensions->get() as $dimension) {
-            $searches[] = $dimension->search($this->wpdb, $searchWords);
+            foreach ($this->dimensions->get() as $dimension) {
+                $searches[] = $dimension->search($this->wpdb, $searchWord, $index);
+            }
+
+            $search = '(' . implode(' OR ', $searches) . ')' . $or;
+
+            $clause = preg_replace('/' . $or . '/', $or . $search, $clause, 1);
         }
 
-        if ($searches) {
-            $metaSearch = implode(' OR ', $searches);
-        }
-
-        if (isset($metaSearch)) {
-            $and = ' AND ';
-            $sql = preg_replace('/' . $and . '/', $and . '(', $sql, 1);
-            $sql .= ' OR (' . $metaSearch . '))';
-        }
-
-        return $sql;
+        return $and . implode($and, $andClauses);
     }
 }
