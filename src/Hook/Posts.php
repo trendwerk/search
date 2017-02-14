@@ -70,7 +70,7 @@ final class Posts
             $metaSearch = implode(' OR ', $searches);
         }
 
-        if ($metaSearch) {
+        if (isset($metaSearch)) {
             $and = ' AND ';
             $sql = preg_replace('/' . $and . '/', $and . '(', $sql, 1);
             $sql .= ' OR (' . $metaSearch . '))';
