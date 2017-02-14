@@ -22,8 +22,18 @@ final class Posts
         $acceptedArgs = 2;
         $defaultPriority = 10;
 
+        add_filter('posts_distinct', [$this, 'distinct'], $defaultPriority, $acceptedArgs);
         add_filter('posts_join', [$this, 'join'], $defaultPriority, $acceptedArgs);
         add_filter('posts_search', [$this, 'search'], $defaultPriority, $acceptedArgs);
+    }
+
+    public function distinct($sql, WP_Query $query)
+    {
+        if (! $query->is_search) {
+            return $sql;
+        }
+
+        return 'DISTINCT';
     }
 
     public function join($sql, WP_Query $query)
@@ -32,27 +42,40 @@ final class Posts
             return $sql;
         }
 
-        $joins = $this->forDimensions(function (Dimension $dimension) {
-            return $dimension->join($this->wpdb);
-        });
+        $joins = [];
+
+        foreach ($this->dimensions->get() as $dimension) {
+            $dimensionType = get_class($dimension);
+            $joins[$dimensionType] = $dimension->join($this->wpdb);
+        }
 
         return $sql . ' ' . implode(' ', $joins);
     }
 
     public function search($sql, WP_Query $query)
     {
-        return $sql;
-    }
-
-    private function forDimensions($callback)
-    {
-        $results = [];
-
-        foreach ($this->dimensions->get() as $dimension) {
-            $dimensionType = get_class($dimension);
-            $results[$dimensionType] = $callback($dimension);
+        if (! $query->is_search) {
+            return $sql;
         }
 
-        return array_values($results);
+        $searchWords = $query->get('search_terms');
+
+        $searches = [];
+
+        foreach ($this->dimensions->get() as $dimension) {
+            $searches[] = $dimension->search($this->wpdb, $searchWords);
+        }
+
+        if ($searches) {
+            $metaSearch = implode(' OR ', $searches);
+        }
+
+        if ($metaSearch) {
+            $and = ' AND ';
+            $sql = preg_replace('/' . $and . '/', $and . '(', $sql, 1);
+            $sql .= ' OR (' . $metaSearch . '))';
+        }
+
+        return $sql;
     }
 }
