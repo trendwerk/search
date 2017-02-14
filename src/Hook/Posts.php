@@ -1,6 +1,9 @@
 <?php
 namespace Trendwerk\Search\Hook;
 
+use Trendwerk\Search\Dimension\Dimension;
+use Trendwerk\Search\Dimension\Dimensions;
+use WP_Query;
 use wpdb;
 
 final class Posts
@@ -8,7 +11,7 @@ final class Posts
     private $dimensions;
     private $wpdb;
 
-    public function __construct(wpdb $wpdb, $dimensions)
+    public function __construct(wpdb $wpdb, Dimensions $dimensions)
     {
         $this->dimensions = $dimensions;
         $this->wpdb = $wpdb;
@@ -23,13 +26,33 @@ final class Posts
         add_filter('posts_search', [$this, 'search'], $defaultPriority, $acceptedArgs);
     }
 
-    public function join($sql, $query)
+    public function join($sql, WP_Query $query)
+    {
+        if (! $query->is_search) {
+            return $sql;
+        }
+
+        $joins = $this->forDimensions(function (Dimension $dimension) {
+            return $dimension->join($this->wpdb);
+        });
+
+        return $sql . ' ' . implode(' ', $joins);
+    }
+
+    public function search($sql, WP_Query $query)
     {
         return $sql;
     }
 
-    public function search($sql, $query)
+    private function forDimensions($callback)
     {
-        return $sql;
+        $results = [];
+
+        foreach ($this->dimensions->get() as $dimension) {
+            $dimensionType = get_class($dimension);
+            $results[$dimensionType] = $callback($dimension);
+        }
+
+        return array_values($results);
     }
 }
