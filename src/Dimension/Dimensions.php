@@ -5,7 +5,8 @@ final class Dimensions
 {
     private $dimensions = [];
 
-    public function add(Dimension $dimension) {
+    public function add(Dimension $dimension)
+    {
         $this->dimensions[] = $dimension;
     }
 
