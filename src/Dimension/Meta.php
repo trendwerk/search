@@ -31,7 +31,12 @@ final class Meta implements Dimension
     {
         $tableAlias = $this->tableAlias . $aliasCount;
 
-        $searchSql = "({$tableAlias}.meta_key = '{$this->options['key']}'";
+        if ($this->options['compare'] == 'LIKE') {
+            $searchSql = "({$tableAlias}.meta_key LIKE '{$this->options['key']}'";
+        } else {
+            $searchSql = "({$tableAlias}.meta_key = '{$this->options['key']}'";
+        }
+        
         $searchSql .= " AND ";
         $searchSql .= "{$tableAlias}.meta_value LIKE '%{$searchWord}%')";
 
