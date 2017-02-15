@@ -15,7 +15,9 @@ final class Meta implements Dimension
             throw new BadMethodCallException('`key` is a required property.');
         }
 
-        $this->options = $options;
+        $this->options = wp_parse_args($options, [
+            'compare' => '=',
+        ]);
     }
 
     public function join(wpdb $wpdb, $aliasCount = 0)
