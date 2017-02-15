@@ -28,6 +28,11 @@ final class MetaTest extends TestCase
         $this->search('Testman', 'firstName', '=');
     }
 
+    public function testSearchLike()
+    {
+        $this->search('McTest', 'lastName', 'LIKE');
+    }
+
     private function search($searchWord, $metaKey, $compare)
     {
         $expectation = "(searchMeta0.meta_key {$compare} %s AND searchMeta0.meta_value LIKE %s)";
