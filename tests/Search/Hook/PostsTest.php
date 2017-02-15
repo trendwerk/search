@@ -10,15 +10,18 @@ use WP_Mock;
 final class PostsTest extends TestCase
 {
     private $posts;
+    private $wpdb;
 
     public function setUp()
     {
         parent::setUp();
 
-        $wpdb = Mockery::mock('wpdb');
+        $this->wpdb = Mockery::mock('wpdb');
+        $this->wpdb->postmeta = 'wp_postmeta';
+        $this->wpdb->posts = 'wp_posts';
 
         $dimensions = new Dimensions();
-        $dimensions->add(new Meta($wpdb, [
+        $dimensions->add(new Meta($this->wpdb, [
             'key' => 'lastName',
         ]));
         
@@ -60,6 +63,28 @@ final class PostsTest extends TestCase
         $expectation = '';
         $result = $this->posts->distinct('', $this->getQuery(true, []));
 
+        $this->assertEquals($expectation, $result);
+    }
+
+    public function testJoin()
+    {
+        $baseSql = 'INNER JOIN alreadyAvailableSql';
+
+        $searchTerms = ['Testman', 'theTester'];
+        $expectation = [];
+
+        foreach ($searchTerms as $index => $searchTerm) {
+            $tableAlias = 'searchMeta' . $index;
+
+            $wordExpectation = "INNER JOIN {$this->wpdb->postmeta} AS {$tableAlias} ";
+            $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$tableAlias}.post_id)";
+
+            $expectation[] = $wordExpectation;
+        }
+
+        $expectation = $baseSql . ' ' . implode(' ', $expectation);
+        $result = $this->posts->join($baseSql, $this->getQuery(true, $searchTerms));
+        
         $this->assertEquals($expectation, $result);
     }
 
