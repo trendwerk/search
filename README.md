@@ -5,7 +5,7 @@ Basic extensions for searching in WordPress. Currently only supports searching i
 
 Quick links: [Install](#install) | [Usage](#usage) | [Dimensions](#dimensions) | [Example](#example)
 
-_Note: This basic extension is not meant for larger databases and could get slow for complex meta searches in larger databases. In that case, [Elasticsearch](https://www.elastic.co/) would be a good solution._
+_Note: This basic extension is not very scalable and meant for smaller databases. This package could get slow for complex meta searches. In that case, [Elasticsearch](https://www.elastic.co/) would be a better solution._
 
 ## Install
 ```sh
