@@ -10,10 +10,10 @@ final class Search
 {
     private $dimensions;
 
-    public function __construct(wpdb $wpdb)
+    public function __construct()
     {
         $this->dimensions = new Dimensions();
-        $this->postsHook = new Posts($wpdb, $this->dimensions);
+        $this->postsHook = new Posts($this->dimensions);
     }
 
     public function init()

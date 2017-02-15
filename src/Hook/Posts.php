@@ -4,17 +4,14 @@ namespace Trendwerk\Search\Hook;
 use Trendwerk\Search\Dimension\Dimension;
 use Trendwerk\Search\Dimension\Dimensions;
 use WP_Query;
-use wpdb;
 
 final class Posts
 {
     private $dimensions;
-    private $wpdb;
 
-    public function __construct(wpdb $wpdb, Dimensions $dimensions)
+    public function __construct(Dimensions $dimensions)
     {
         $this->dimensions = $dimensions;
-        $this->wpdb = $wpdb;
     }
 
     public function init()
@@ -49,7 +46,7 @@ final class Posts
         foreach ($searchWords as $wordCount => $searchWord) {
             foreach ($this->dimensions->get() as $dimension) {
                 $dimensionType = get_class($dimension);
-                $joins[$dimensionType . $wordCount] = $dimension->join($this->wpdb, $wordCount);
+                $joins[$dimensionType . $wordCount] = $dimension->join($wordCount);
             }
         }
 
@@ -73,7 +70,7 @@ final class Posts
             $searches = [];
 
             foreach ($this->dimensions->get() as $dimension) {
-                $searches[] = $dimension->search($this->wpdb, $searchWord, $index);
+                $searches[] = $dimension->search($searchWord, $index);
             }
 
             $search = '(' . implode($or, $searches) . ')' . $or;
