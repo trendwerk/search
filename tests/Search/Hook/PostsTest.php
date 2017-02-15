@@ -9,6 +9,7 @@ use WP_Mock;
 
 final class PostsTest extends TestCase
 {
+    private $metaKey = 'lastName';
     private $posts;
     private $wpdb;
 
@@ -22,7 +23,8 @@ final class PostsTest extends TestCase
 
         $dimensions = new Dimensions();
         $dimensions->add(new Meta($this->wpdb, [
-            'key' => 'lastName',
+            'compare' => '=',
+            'key'     => $this->metaKey,
         ]));
         
         $this->posts = new Posts($dimensions);
@@ -95,6 +97,44 @@ final class PostsTest extends TestCase
         $result = $this->posts->join($baseSql, $this->getQuery(false));
 
         $this->assertEquals($expectation, $result);
+    }
+
+    public function testSearch()
+    {
+        $and = " AND ";
+        $or = " OR ";
+
+        $searchTerms = ['Testman', 'theTester'];
+        $baseSql = $and . "(";
+
+        foreach ($searchTerms as $searchTerm) {
+            $baseSql .= "(";
+            $baseSql .= "({$this->wpdb->posts}.post_title LIKE '%{$searchTerm}%')";
+            $baseSql .= $or;
+            $baseSql .= "({$this->wpdb->posts}.post_content LIKE '%{$searchTerm}%')";
+            $baseSql .= ")" . $and;
+        }
+
+        $baseSql = mb_substr($baseSql, 0, mb_strlen($baseSql) - mb_strlen($or));
+        $baseSql .= ")";
+
+        $expectations = [];
+
+        foreach ($searchTerms as $index => $searchTerm) {
+            $expectations[] = "searchMeta{$index}.meta_key  %s AND searchMeta{$index}.meta_value LIKE %s";
+        }
+
+        $this->wpdb->shouldReceive('prepare')
+            ->times(count($searchTerms))
+            ->andReturnUsing(function ($sql) {
+                return $sql;
+            });
+
+        $result = $this->posts->search($baseSql, $this->getQuery(true, $searchTerms));
+
+        foreach ($expectations as $expectation) {
+            $this->assertContains($expectation, $result);
+        }
     }
 
     private function getQuery($isSearch = true, $terms = ['Testman', 'mcTest'])
