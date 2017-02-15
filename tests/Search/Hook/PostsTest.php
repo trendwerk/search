@@ -137,6 +137,14 @@ final class PostsTest extends TestCase
         }
     }
 
+    public function testSearchWithoutSearch()
+    {
+        $expectation = '';
+        $result = $this->posts->search('', $this->getQuery(false));
+
+        $this->assertEquals($expectation, $result);
+    }
+
     private function getQuery($isSearch = true, $terms = ['Testman', 'mcTest'])
     {
         $wpQuery = Mockery::mock('WP_Query');
