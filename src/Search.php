@@ -9,6 +9,7 @@ use wpdb;
 final class Search
 {
     private $dimensions;
+    private $postsHook;
 
     public function __construct()
     {
