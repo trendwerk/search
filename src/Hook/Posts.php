@@ -29,7 +29,7 @@ final class Posts
 
     public function distinct($sql, WP_Query $query)
     {
-        if (! $query->is_search) {
+        if (! $this->isSearch($query)) {
             return $sql;
         }
 
@@ -38,7 +38,7 @@ final class Posts
 
     public function join($sql, WP_Query $query)
     {
-        if (! $query->is_search) {
+        if (! $this->isSearch($query)) {
             return $sql;
         }
 
@@ -58,7 +58,7 @@ final class Posts
 
     public function search($sql, WP_Query $query)
     {
-        if (! $query->is_search) {
+        if (! $this->isSearch($query)) {
             return $sql;
         }
 
@@ -82,5 +82,20 @@ final class Posts
         }
 
         return $and . implode($and, $andClauses);
+    }
+
+    private function isSearch(WP_Query $query)
+    {
+        if (! $query->is_search) {
+            return false;
+        }
+
+        $searchWords = $query->get('search_terms');
+
+        if (! $searchWords) {
+            return false;
+        }
+
+        return true;
     }
 }
