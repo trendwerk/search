@@ -33,7 +33,7 @@ final class Posts
             return $sql;
         }
 
-        return 'DISTINCT';
+        return "DISTINCT";
     }
 
     public function join($sql, WP_Query $query)
@@ -62,8 +62,8 @@ final class Posts
             return $sql;
         }
 
-        $and = ' AND ';
-        $or = ' OR ';
+        $and = " AND ";
+        $or = " OR ";
 
         $searchWords = $query->get('search_terms');
         $andClauses = array_values(array_filter(explode($and, $sql)));
@@ -76,7 +76,7 @@ final class Posts
                 $searches[] = $dimension->search($this->wpdb, $searchWord, $index);
             }
 
-            $search = '(' . implode(' OR ', $searches) . ')' . $or;
+            $search = '(' . implode($or, $searches) . ')' . $or;
 
             $clause = preg_replace('/' . $or . '/', $or . $search, $clause, 1);
         }

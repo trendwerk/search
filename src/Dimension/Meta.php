@@ -24,15 +24,17 @@ final class Meta implements Dimension
     {
         $tableAlias = $this->tableAlias . $aliasCount;
 
-        return 'INNER JOIN ' . $wpdb->postmeta . ' AS ' . $tableAlias .
-            ' ON (' . $wpdb->posts . '.ID = ' . $tableAlias . '.post_id)';
+        return "INNER JOIN {$wpdb->postmeta} AS {$tableAlias} ON ({$wpdb->posts}.ID = {$tableAlias}.post_id)";
     }
 
     public function search(wpdb $wpdb, $searchWord, $aliasCount = 0)
     {
         $tableAlias = $this->tableAlias . $aliasCount;
 
-        return '(' . $tableAlias . '.meta_key = \'' . $this->options['key'] . '\' AND ' .
-            $tableAlias . '.meta_value LIKE \'%' . $searchWord . '%\')';
+        $searchSql = "({$tableAlias}.meta_key = '{$this->options['key']}'";
+        $searchSql .= " AND ";
+        $searchSql .= "{$tableAlias}.meta_value LIKE '%{$searchWord}%')";
+
+        return $searchSql;
     }
 }
