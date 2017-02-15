@@ -49,7 +49,7 @@ Available options for constructing an instance of `Meta`:
 | Parameter | Default | Required | Description |
 | :--- | :--- | :--- | :--- |
 | `key` | `null` | Yes | The `meta_key` to search for
-| `compare` | `null` | No | The database comparison that should be made for the meta key. Currently supports `LIKE` and `=`. When using `LIKE`, make sure to include a percent symbol (`%`) in your `key` parameter as a wildcard. See [Example](#example)
+| `compare` | `=` | No | The database comparison that should be made for the meta key. Currently supports `LIKE` and `=`. When using `LIKE`, make sure to include a percent symbol (`%`) in your `key` parameter as a wildcard. See [Example](#example)
 
 ## Example
 
