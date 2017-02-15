@@ -124,6 +124,11 @@ final class PostsTest extends TestCase
             $expectations[] = "searchMeta{$index}.meta_key  %s AND searchMeta{$index}.meta_value LIKE %s";
         }
 
+        $this->wpdb->shouldReceive('esc_like')
+            ->andReturnUsing(function ($searchWord) {
+                return $searchWord;
+            });
+
         $this->wpdb->shouldReceive('prepare')
             ->times(count($searchTerms))
             ->andReturnUsing(function ($sql) {

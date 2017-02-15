@@ -35,6 +35,7 @@ final class Meta implements Dimension
     public function search($searchWord, $aliasCount = 0)
     {
         $tableAlias = $this->tableAlias . $aliasCount;
+        $searchWord = $this->wpdb->esc_like($searchWord);
 
         $searchSql = "({$tableAlias}.meta_key {$this->options['compare']} %s";
         $searchSql .= " AND ";

@@ -64,6 +64,11 @@ final class MetaTest extends TestCase
 
         $meta = $this->create($metaKey, $compare);
 
+        $this->wpdb->shouldReceive('esc_like')
+            ->andReturnUsing(function ($searchWord) {
+                return $searchWord;
+            });
+
         $this->wpdb->shouldReceive('prepare')
             ->once()
             ->andReturnUsing(function () {
@@ -72,7 +77,7 @@ final class MetaTest extends TestCase
 
         $result = $meta->search($searchWord, $tableAliasCount);
 
-        $this->assertEquals($result, [$expectation, $metaKey, $searchWord]);
+        $this->assertEquals($result, [$expectation, $metaKey, '%' . $searchWord . '%']);
     }
 
     private function create($metaKey, $compare)
