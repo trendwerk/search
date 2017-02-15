@@ -8,6 +8,7 @@ use WP_Mock;
 
 final class MetaTest extends TestCase
 {
+    private $tableAlias = 'searchMeta';
     private $wpdb;
 
     public function setUp()
@@ -40,15 +41,10 @@ final class MetaTest extends TestCase
 
     private function search($searchWord, $metaKey, $compare, $tableAliasCount = 0)
     {
-        $tableAlias = 'searchMeta' . $tableAliasCount;
+        $tableAlias = $this->tableAlias . $tableAliasCount;
         $expectation = "({$tableAlias}.meta_key {$compare} %s AND {$tableAlias}.meta_value LIKE %s)";
 
-        WP_Mock::wpPassthruFunction('wp_parse_args', ['times' => 1]);
-
-        $meta = new Meta($this->wpdb, [
-            'compare' => $compare,
-            'key'     => $metaKey,
-        ]);
+        $meta = $this->create($metaKey, $compare);
 
         $this->wpdb->shouldReceive('prepare')
             ->once()
@@ -59,5 +55,16 @@ final class MetaTest extends TestCase
         $result = $meta->search($searchWord, $tableAliasCount);
 
         $this->assertEquals($result, [$expectation, $metaKey, $searchWord]);
+    }
+
+    private function create($metaKey, $compare) {
+        WP_Mock::wpPassthruFunction('wp_parse_args', ['times' => 1]);
+
+        $meta = new Meta($this->wpdb, [
+            'compare' => $compare,
+            'key'     => $metaKey,
+        ]);
+
+        return $meta;
     }
 }
