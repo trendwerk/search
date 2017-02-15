@@ -11,7 +11,6 @@ composer require trendwerk/acf-forms
 ```
 
 ## Usage
-Extending search by looking inside a posts' meta data consists of two parts:
 
 1. [Initialize package](#initialize)
 2. [Add search dimension(s)](#dimensions)
