@@ -38,4 +38,19 @@ final class PostsTest extends TestCase
 
         WP_Mock::assertHooksAdded();
     }
+
+    public function testDistinct()
+    {
+        $expectation = "DISTINCT";
+
+        $wpQuery = Mockery::mock('WP_Query');
+        $wpQuery->is_search = true;
+        $wpQuery->shouldReceive('get')
+            ->with('search_terms')
+            ->andReturn(['Testman', 'mcTest']);
+
+        $result = $this->posts->distinct('', $wpQuery);
+
+        $this->assertEquals($expectation, $result);
+    }
 }
