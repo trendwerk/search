@@ -13,7 +13,7 @@ final class MetaTest extends TestCase
     {
         parent::setUp();
 
-        $this->wpdb = Mockery::mock('wpdb');;
+        $this->wpdb = Mockery::mock('wpdb');
     }
 
     public function testKeyRequired()
