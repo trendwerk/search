@@ -88,6 +88,15 @@ final class PostsTest extends TestCase
         $this->assertEquals($expectation, $result);
     }
 
+    public function testJoinWithoutSearch()
+    {
+        $baseSql = 'INNER JOIN alreadyAvailable';
+        $expectation = $baseSql;
+        $result = $this->posts->join($baseSql, $this->getQuery(false));
+
+        $this->assertEquals($expectation, $result);
+    }
+
     private function getQuery($isSearch = true, $terms = ['Testman', 'mcTest'])
     {
         $wpQuery = Mockery::mock('WP_Query');
