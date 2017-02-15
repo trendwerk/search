@@ -68,4 +68,19 @@ final class PostsTest extends TestCase
 
         $this->assertEquals($expectation, $result);
     }
+
+    public function testDistinctNoWords()
+    {
+        $expectation = '';
+
+        $wpQuery = Mockery::mock('WP_Query');
+        $wpQuery->is_search = true;
+        $wpQuery->shouldReceive('get')
+            ->with('search_terms')
+            ->andReturn([]);
+
+        $result = $this->posts->distinct('', $wpQuery);
+
+        $this->assertEquals($expectation, $result);
+    }
 }
