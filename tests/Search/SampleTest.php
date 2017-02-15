@@ -1,9 +1,9 @@
 <?php
 namespace Trendwerk\Search\Test;
 
-use WP_UnitTestCase;
+use PHPUnit_Framework_TestCase;
 
-final class SampleTest extends WP_UnitTestCase
+final class SampleTest extends PHPUnit_Framework_TestCase
 {
     public function testSample()
     {
