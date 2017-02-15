@@ -40,6 +40,6 @@ final class Meta implements Dimension
         $searchSql .= " AND ";
         $searchSql .= "{$tableAlias}.meta_value LIKE %s)";
 
-        return $this->wpdb->prepare($searchSql, $this->options['key'], $searchWord);
+        return $this->wpdb->prepare($searchSql, $this->options['key'], '%' . $searchWord . '%');
     }
 }
