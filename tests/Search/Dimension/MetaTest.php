@@ -75,7 +75,8 @@ final class MetaTest extends TestCase
         $this->assertEquals($result, [$expectation, $metaKey, $searchWord]);
     }
 
-    private function create($metaKey, $compare) {
+    private function create($metaKey, $compare)
+    {
         WP_Mock::wpPassthruFunction('wp_parse_args', ['times' => 1]);
 
         $meta = new Meta($this->wpdb, [
