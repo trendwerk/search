@@ -31,15 +31,10 @@ final class Meta implements Dimension
     {
         $tableAlias = $this->tableAlias . $aliasCount;
 
-        if ($this->options['compare'] == 'LIKE') {
-            $searchSql = "({$tableAlias}.meta_key LIKE '{$this->options['key']}'";
-        } else {
-            $searchSql = "({$tableAlias}.meta_key = '{$this->options['key']}'";
-        }
-        
+        $searchSql = "({$tableAlias}.meta_key {$this->options['compare']} %s";
         $searchSql .= " AND ";
-        $searchSql .= "{$tableAlias}.meta_value LIKE '%{$searchWord}%')";
+        $searchSql .= "{$tableAlias}.meta_value LIKE %s)";
 
-        return $searchSql;
+        return $wpdb->prepare($searchSql, $this->options['key'], $searchWord);
     }
 }
