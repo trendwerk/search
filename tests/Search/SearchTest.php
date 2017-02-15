@@ -25,7 +25,7 @@ final class SearchTest extends TestCase
 
     public function testAddDimension()
     {
-        $wpdb = Mockery::mock('\wpdb');
+        $wpdb = Mockery::mock('wpdb');
 
         $this->expectException(BadMethodCallException::class);
         $this->search->addDimension(new Meta($wpdb, []));
