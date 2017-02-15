@@ -27,7 +27,8 @@ final class SearchTest extends TestCase
     {
         $wpdb = Mockery::mock('wpdb');
 
-        $this->expectException(BadMethodCallException::class);
-        $this->search->addDimension(new Meta($wpdb, []));
+        $this->assertNull($this->search->addDimension(new Meta($wpdb, [
+            'key' => 'firstName',
+        ])));
     }
 }
