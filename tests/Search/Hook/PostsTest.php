@@ -42,14 +42,7 @@ final class PostsTest extends TestCase
     public function testDistinct()
     {
         $expectation = "DISTINCT";
-
-        $wpQuery = Mockery::mock('WP_Query');
-        $wpQuery->is_search = true;
-        $wpQuery->shouldReceive('get')
-            ->with('search_terms')
-            ->andReturn(['Testman', 'mcTest']);
-
-        $result = $this->posts->distinct('', $wpQuery);
+        $result = $this->posts->distinct('', $this->getQuery());
 
         $this->assertEquals($expectation, $result);
     }
@@ -57,14 +50,7 @@ final class PostsTest extends TestCase
     public function testDistinctNotSearch()
     {
         $expectation = '';
-
-        $wpQuery = Mockery::mock('WP_Query');
-        $wpQuery->is_search = false;
-        $wpQuery->shouldReceive('get')
-            ->with('search_terms')
-            ->andReturn(['Testman', 'mcTest']);
-
-        $result = $this->posts->distinct('', $wpQuery);
+        $result = $this->posts->distinct('', $this->getQuery(false));
 
         $this->assertEquals($expectation, $result);
     }
@@ -72,15 +58,19 @@ final class PostsTest extends TestCase
     public function testDistinctNoWords()
     {
         $expectation = '';
-
-        $wpQuery = Mockery::mock('WP_Query');
-        $wpQuery->is_search = true;
-        $wpQuery->shouldReceive('get')
-            ->with('search_terms')
-            ->andReturn([]);
-
-        $result = $this->posts->distinct('', $wpQuery);
+        $result = $this->posts->distinct('', $this->getQuery(true, []));
 
         $this->assertEquals($expectation, $result);
+    }
+
+    private function getQuery($isSearch = true, $terms = ['Testman', 'mcTest'])
+    {
+        $wpQuery = Mockery::mock('WP_Query');
+        $wpQuery->is_search = $isSearch;
+        $wpQuery->shouldReceive('get')
+            ->with('search_terms')
+            ->andReturn($terms);
+
+        return $wpQuery;
     }
 }
