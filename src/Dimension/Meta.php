@@ -26,8 +26,10 @@ final class Meta implements Dimension
     {
         $tableAlias = $this->tableAlias . $aliasCount;
 
-        return "INNER JOIN {$this->wpdb->postmeta} AS {$tableAlias}
-            ON ({$this->wpdb->posts}.ID = {$tableAlias}.post_id)";
+        $sql = "INNER JOIN {$this->wpdb->postmeta} AS {$tableAlias} ";
+        $sql .= "ON ({$this->wpdb->posts}.ID = {$tableAlias}.post_id)";
+
+        return $sql;
     }
 
     public function search($searchWord, $aliasCount = 0)

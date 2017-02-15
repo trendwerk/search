@@ -32,8 +32,8 @@ final class MetaTest extends TestCase
         $this->wpdb->posts = 'wp_posts';
         $this->wpdb->postmeta = 'wp_postmeta';
 
-        $expectation = "INNER JOIN {$this->wpdb->postmeta} AS {$tableAlias}
-            ON ({$this->wpdb->posts}.ID = {$tableAlias}.post_id)";
+        $expectation = "INNER JOIN {$this->wpdb->postmeta} AS {$tableAlias} ";
+        $expectation .= "ON ({$this->wpdb->posts}.ID = {$tableAlias}.post_id)";
 
         $meta = $this->create('firstName', '=');
 
