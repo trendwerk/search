@@ -53,4 +53,19 @@ final class PostsTest extends TestCase
 
         $this->assertEquals($expectation, $result);
     }
+
+    public function testDistinctNotSearch()
+    {
+        $expectation = '';
+
+        $wpQuery = Mockery::mock('WP_Query');
+        $wpQuery->is_search = false;
+        $wpQuery->shouldReceive('get')
+            ->with('search_terms')
+            ->andReturn(['Testman', 'mcTest']);
+
+        $result = $this->posts->distinct('', $wpQuery);
+
+        $this->assertEquals($expectation, $result);
+    }
 }
