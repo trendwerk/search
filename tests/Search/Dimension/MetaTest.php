@@ -33,9 +33,15 @@ final class MetaTest extends TestCase
         $this->search('McTest', 'lastName', 'LIKE');
     }
 
-    private function search($searchWord, $metaKey, $compare)
+    public function testSearchAliasCount()
     {
-        $expectation = "(searchMeta0.meta_key {$compare} %s AND searchMeta0.meta_value LIKE %s)";
+        $this->search('Testman', 'firstName', '=', 2);
+    }
+
+    private function search($searchWord, $metaKey, $compare, $tableAliasCount = 0)
+    {
+        $tableAlias = 'searchMeta' . $tableAliasCount;
+        $expectation = "({$tableAlias}.meta_key {$compare} %s AND {$tableAlias}.meta_value LIKE %s)";
 
         WP_Mock::wpPassthruFunction('wp_parse_args', ['times' => 1]);
 
@@ -50,7 +56,7 @@ final class MetaTest extends TestCase
                 return func_get_args();
             });
 
-        $result = $meta->search($searchWord);
+        $result = $meta->search($searchWord, $tableAliasCount);
 
         $this->assertEquals($result, [$expectation, $metaKey, $searchWord]);
     }
