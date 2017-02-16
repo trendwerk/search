@@ -9,7 +9,7 @@ _Note: This basic extension is not very scalable and meant for smaller databases
 
 ## Install
 ```sh
-composer require trendwerk/acf-forms
+composer require trendwerk/search
 ```
 
 ## Usage
