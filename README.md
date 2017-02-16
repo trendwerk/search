@@ -59,7 +59,7 @@ Available options for constructing an instance of `Meta`:
 use Trendwerk\Search\Dimension\Meta;
 use Trendwerk\Search\Search;
 
-$search = new \Trendwerk\Search\Search();
+$search = Search();
 $search->init();
 
 $search->addDimension(new Meta($wpdb, [
