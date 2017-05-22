@@ -47,6 +47,11 @@ final class TermTest extends TestCase
     {
         $this->search('Testterm', 'testTaxonomy');
     }
+
+    public function testSearchAliasCount()
+    {
+        $this->search('Term', 'taxonomy', 2);
+    }
     
     public function testNoHit()
     {
