@@ -46,7 +46,7 @@ final class Term implements Dimension
         return "{$tableAlias}.term_taxonomy_id IN ({$termIds})";
     }
 
-    private function termsFor(string $searchWord)
+    private function termsFor($searchWord)
     {
         return $this->wpdb->get_col($this->wpdb->prepare("SELECT {$this->wpdb->term_taxonomy}.term_id
             FROM {$this->wpdb->term_taxonomy}
