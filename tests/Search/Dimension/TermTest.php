@@ -47,16 +47,26 @@ final class TermTest extends TestCase
     {
         $this->search('Testterm', 'testTaxonomy');
     }
+    
+    public function testNoHit()
+    {
+        $this->search('Testterm', 'testTaxonomy', 2, []);
+    }
 
-    private function search($searchWord, $taxonomy, $tableAliasCount = 0)
+    private function search($searchWord, $taxonomy, $tableAliasCount = 0, $foundTermIds = [18, 12])
     {
         $tableAlias = $this->tableAlias . $tableAliasCount;
-        $termIds = [18, 12];
-        $expectation = "{$tableAlias}.term_taxonomy_id IN (18,12)";
+
+        if (count($foundTermIds) == 0) {
+            $expectation = '';
+        } else {
+            $termIds = implode(',', $foundTermIds);
+            $expectation = "{$tableAlias}.term_taxonomy_id IN ({$termIds})";
+        }
 
         $term = $this->create($taxonomy);
 
-        WP_Mock::wpPassthruFunction('absint', ['times' => 2]);
+        WP_Mock::wpPassthruFunction('absint', ['times' => count($foundTermIds)]);
 
         $this->wpdb->shouldReceive('esc_like')
             ->once()
@@ -71,7 +81,7 @@ final class TermTest extends TestCase
 
         $this->wpdb->shouldReceive('get_col')
             ->once()
-            ->andReturn($termIds);
+            ->andReturn($foundTermIds);
 
         $result = $term->search($searchWord, $tableAliasCount);
 
