@@ -53,13 +53,27 @@ Available options for constructing an instance of `Meta`:
 | `key` | `null` | Yes | The `meta_key` to search for
 | `compare` | `=` | No | The database comparison that should be made for the meta key. Currently supports `LIKE` and `=`. When using `LIKE`, make sure to include a percent symbol (`%`) in your `key` parameter as a wildcard. See [Example](#example)
 
+### Terms
+```php
+$search->addDimension(new \Trendwerk\Search\Dimension\Term($wpdb, [
+	'taxonomy' => 'taxonomyName',
+]));
+```
+
+Available options for constructing an instance of `Term`:
+
+| Parameter | Default | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `taxonomy` | `null` | Yes | The `taxonomy` which terms should be included in search
+
 ## Example
 
 ```php
 use Trendwerk\Search\Dimension\Meta;
+use Trendwerk\Search\Dimension\Term;
 use Trendwerk\Search\Search;
 
-$search = Search();
+$search = new Search();
 $search->init();
 
 $search->addDimension(new Meta($wpdb, [
@@ -69,5 +83,9 @@ $search->addDimension(new Meta($wpdb, [
 
 $search->addDimension(new Meta($wpdb, [
     'key' => 'firstName',
+]));
+
+$search->addDimension(new Term($wpdb, [
+    'taxonomy' => 'category',
 ]));
 ```
