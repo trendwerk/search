@@ -43,7 +43,7 @@ final class Term implements Dimension
 
         $termIds = implode(',', $termIds);
 
-        return "{$tableAlias}.term_taxonomy_id IN({$termIds})";
+        return "{$tableAlias}.term_taxonomy_id IN ({$termIds})";
     }
 
     private function termsFor(string $searchWord)
