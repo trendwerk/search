@@ -7,6 +7,7 @@ use wpdb;
 final class Term implements Dimension
 {
     private $options;
+    private $tableAlias = 'searchTerm';
     private $wpdb;
 
     public function __construct(wpdb $wpdb, array $options)
@@ -21,7 +22,12 @@ final class Term implements Dimension
 
     public function join($aliasCount = 0)
     {
-        return '';
+        $tableAlias = $this->tableAlias . $aliasCount;
+
+        $sql = "INNER JOIN {$this->wpdb->term_relationships} AS {$tableAlias} ";
+        $sql .= "ON ({$this->wpdb->posts}.ID = {$tableAlias}.object_id)";
+
+        return $sql;
     }
 
     public function search($searchWord, $aliasCount = 0)
