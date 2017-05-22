@@ -39,7 +39,7 @@ $search->addDimension($dimension);
 
 ### Meta
 ```php
-$metaDimension = new \Trendwerk\Search\Dimension\Meta([
+$metaDimension = new \Trendwerk\Search\Dimension\Meta($wpdb, [
 	'key' => 'firstName',
 ]);
 
