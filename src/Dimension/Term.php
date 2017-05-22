@@ -32,6 +32,27 @@ final class Term implements Dimension
 
     public function search($searchWord, $aliasCount = 0)
     {
-        return '0=1';
+        $tableAlias = $this->tableAlias . $aliasCount;
+        $searchWord = $this->wpdb->esc_like($searchWord);
+
+        $termIds = array_map('absint', $this->termsFor($searchWord));
+
+        if (count($termIds) == 0) {
+            return;
+        }
+
+        $termIds = implode(',', $termIds);
+
+        return "{$tableAlias}.term_taxonomy_id IN({$termIds})";
+    }
+
+    private function termsFor(string $searchWord)
+    {
+        return $this->wpdb->get_col($this->wpdb->prepare("SELECT {$this->wpdb->term_taxonomy}.term_id
+            FROM {$this->wpdb->term_taxonomy}
+            INNER JOIN {$this->wpdb->terms} USING(term_id)
+            WHERE taxonomy = %s
+            AND {$this->wpdb->terms}.name LIKE %s
+        ", $this->options['taxonomy'], "%{$searchWord}%"));
     }
 }
