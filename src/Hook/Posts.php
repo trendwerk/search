@@ -73,6 +73,8 @@ final class Posts
                 $searches[] = $dimension->search($searchWord, $index);
             }
 
+            $searches = array_filter($searches);
+
             $search = '(' . implode($or, $searches) . ')' . $or;
 
             $clause = preg_replace('/' . $or . '/', $or . $search, $clause, 1);
