@@ -1,11 +1,11 @@
 # Search
 [![Build Status](https://travis-ci.org/trendwerk/search.svg?branch=master)](https://travis-ci.org/trendwerk/search) [![codecov](https://codecov.io/gh/trendwerk/search/branch/master/graph/badge.svg)](https://codecov.io/gh/trendwerk/search)
 
-Basic extensions for searching in WordPress. Currently only supports searching in `postmeta`.
+Basic extensions for searching in WordPress.
 
 Quick links: [Install](#install) | [Usage](#usage) | [Dimensions](#dimensions) | [Example](#example)
 
-_Note: This basic extension is not very scalable and meant for smaller databases. This package could get slow for complex meta searches. In that case, [Elasticsearch](https://www.elastic.co/) would be a better solution._
+_Note: This basic extension is not very scalable and meant for smaller databases. This package could get slow for complex searches. In that case, [Elasticsearch](https://www.elastic.co/) would be a better solution._
 
 ## Install
 ```sh
@@ -27,7 +27,7 @@ $search->init();
 This code should be run when bootstrapping your theme.
 
 ### Dimensions
-Currently this package only supports metadata as a search dimension. Dimensions can be added by using `addDimension`:
+Currently this package supports metadata and terms as search dimensions. Dimensions can be added by using `addDimension`:
 
 ```php
 $search->addDimension($dimension);
