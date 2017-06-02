@@ -112,6 +112,19 @@ final class PostsTest extends TestCase
 
     public function testSearch()
     {
+        $this->search();
+    }
+
+    public function testSearchWithoutSearch()
+    {
+        $expectation = '';
+        $result = $this->posts->search('', $this->getQuery(false));
+
+        $this->assertEquals($expectation, $result);
+    }
+
+    private function search()
+    {
         $and = " AND ";
         $or = " OR ";
 
@@ -162,14 +175,6 @@ final class PostsTest extends TestCase
         foreach ($expectations as $expectation) {
             $this->assertContains($expectation, $result);
         }
-    }
-
-    public function testSearchWithoutSearch()
-    {
-        $expectation = '';
-        $result = $this->posts->search('', $this->getQuery(false));
-
-        $this->assertEquals($expectation, $result);
     }
 
     private function getQuery($isSearch = true, $terms = ['Testman', 'mcTest'])
