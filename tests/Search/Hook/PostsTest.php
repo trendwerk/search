@@ -112,7 +112,9 @@ final class PostsTest extends TestCase
 
     public function testSearch()
     {
-        $this->search();
+        $searchTerms = ['Testman', 'theTester'];
+
+        $this->search($searchTerms);
     }
 
     public function testSearchWithoutSearch()
@@ -123,12 +125,11 @@ final class PostsTest extends TestCase
         $this->assertEquals($expectation, $result);
     }
 
-    private function search()
+    private function search(array $searchTerms)
     {
         $and = " AND ";
         $or = " OR ";
 
-        $searchTerms = ['Testman', 'theTester'];
         $fakeTermIds = [1, 9];
         $baseSql = $and . "(";
 
