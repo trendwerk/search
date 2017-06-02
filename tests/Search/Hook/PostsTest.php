@@ -141,7 +141,11 @@ final class PostsTest extends TestCase
             ->times(count($searchTerms))
             ->andReturn($fakeTermIds);
 
-        $this->search($searchTerms, $expectations);
+        $result = $this->search($searchTerms);
+
+        foreach ($expectations as $expectation) {
+            $this->assertContains($expectation, $result);
+        }
     }
 
     public function testSearchWithoutSearch()
@@ -179,10 +183,14 @@ final class PostsTest extends TestCase
             ->times(count($searchTerms))
             ->andReturn($fakeTermIds);
 
-        $this->search(['Testman', 'theTester'], $expectations, new Posts($dimensions));
+        $result = $this->search(['Testman', 'theTester'], new Posts($dimensions));
+
+        foreach ($expectations as $expectation) {
+            $this->assertContains($expectation, $result);
+        }
     }
 
-    private function search(array $searchTerms, array $expectations, Posts $posts = null)
+    private function search(array $searchTerms, Posts $posts = null)
     {
         if (! $posts) {
             $posts = $this->posts;
@@ -204,11 +212,7 @@ final class PostsTest extends TestCase
         $baseSql = mb_substr($baseSql, 0, mb_strlen($baseSql) - mb_strlen($or));
         $baseSql .= ")";
 
-        $result = $posts->search($baseSql, $this->getQuery(true, $searchTerms));
-
-        foreach ($expectations as $expectation) {
-            $this->assertContains($expectation, $result);
-        }
+        return $posts->search($baseSql, $this->getQuery(true, $searchTerms));
     }
 
     private function getQuery($isSearch = true, $terms = ['Testman', 'mcTest'])
