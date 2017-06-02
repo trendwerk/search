@@ -113,8 +113,17 @@ final class PostsTest extends TestCase
     public function testSearch()
     {
         $searchTerms = ['Testman', 'theTester'];
+        $fakeTermIds = [1, 9];
+        $expectations = [];
 
-        $this->search($searchTerms);
+        foreach ($searchTerms as $index => $searchTerm) {
+            $expectations[] = "searchMeta{$index}.meta_key  %s AND searchMeta{$index}.meta_value LIKE %s";
+
+            $termIds = implode(',', $fakeTermIds);
+            $expectations[] = "searchTerm{$index}.term_taxonomy_id IN ({$termIds})";
+        }
+
+        $this->search($searchTerms, $expectations, $fakeTermIds);
     }
 
     public function testSearchWithoutSearch()
@@ -125,12 +134,11 @@ final class PostsTest extends TestCase
         $this->assertEquals($expectation, $result);
     }
 
-    private function search(array $searchTerms)
+    private function search(array $searchTerms, array $expectations, array $fakeTermIds)
     {
         $and = " AND ";
         $or = " OR ";
 
-        $fakeTermIds = [1, 9];
         $baseSql = $and . "(";
 
         foreach ($searchTerms as $searchTerm) {
@@ -143,14 +151,6 @@ final class PostsTest extends TestCase
 
         $baseSql = mb_substr($baseSql, 0, mb_strlen($baseSql) - mb_strlen($or));
         $baseSql .= ")";
-
-        $expectations = [];
-
-        foreach ($searchTerms as $index => $searchTerm) {
-            $expectations[] = "searchMeta{$index}.meta_key  %s AND searchMeta{$index}.meta_value LIKE %s";
-            $termIds = implode(',', $fakeTermIds);
-            $expectations[] = "searchTerm{$index}.term_taxonomy_id IN ({$termIds})";
-        }
 
         WP_Mock::wpPassthruFunction('absint', ['times' => (count($fakeTermIds) * count($searchTerms))]);
 
