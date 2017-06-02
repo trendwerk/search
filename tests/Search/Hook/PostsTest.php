@@ -134,8 +134,24 @@ final class PostsTest extends TestCase
         $this->assertEquals($expectation, $result);
     }
 
-    private function search(array $searchTerms, array $expectations, array $fakeTermIds)
+    public function testSearchWithoutTermHit()
     {
+        $dimensions = new Dimensions();
+        $dimensions->add(new Term($this->wpdb, [
+            'taxonomy' => $this->taxonomy,
+        ]));
+
+        $expectations = [' '];
+
+        $this->search(['Testman', 'theTester'], $expectations, [], new Posts($dimensions));
+    }
+
+    private function search(array $searchTerms, array $expectations, array $fakeTermIds, Posts $posts = null)
+    {
+        if (! $posts) {
+            $posts = $this->posts;
+        }
+
         $and = " AND ";
         $or = " OR ";
 
@@ -170,7 +186,7 @@ final class PostsTest extends TestCase
             ->times(count($searchTerms))
             ->andReturn($fakeTermIds);
 
-        $result = $this->posts->search($baseSql, $this->getQuery(true, $searchTerms));
+        $result = $posts->search($baseSql, $this->getQuery(true, $searchTerms));
 
         foreach ($expectations as $expectation) {
             $this->assertContains($expectation, $result);
