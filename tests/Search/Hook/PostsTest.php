@@ -165,7 +165,6 @@ final class PostsTest extends TestCase
 
         $fakeTermIds = [];
         $searchTerms = ['Testterm', 'AnotherQuery'];
-        $expectations = ['OR ()'];
 
         $this->wpdb->shouldReceive('esc_like')
             ->times(count($searchTerms))
@@ -185,9 +184,7 @@ final class PostsTest extends TestCase
 
         $result = $this->search(['Testman', 'theTester'], new Posts($dimensions));
 
-        foreach ($expectations as $expectation) {
-            $this->assertContains($expectation, $result);
-        }
+        $this->assertNotContains('OR ()', $result);
     }
 
     private function search(array $searchTerms, Posts $posts = null)
