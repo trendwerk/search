@@ -4,6 +4,7 @@ namespace Trendwerk\Search\Test;
 use Mockery;
 use Trendwerk\Search\Dimension\Dimensions;
 use Trendwerk\Search\Dimension\Meta;
+use Trendwerk\Search\Dimension\Term;
 use Trendwerk\Search\Hook\Posts;
 use WP_Mock;
 
@@ -11,6 +12,7 @@ final class PostsTest extends TestCase
 {
     private $metaKey = 'lastName';
     private $posts;
+    private $taxonomy = 'taxonomyName';
     private $wpdb;
 
     public function setUp()
@@ -20,11 +22,17 @@ final class PostsTest extends TestCase
         $this->wpdb = Mockery::mock('wpdb');
         $this->wpdb->postmeta = 'wp_postmeta';
         $this->wpdb->posts = 'wp_posts';
+        $this->wpdb->term_relationships = 'wp_term_relationships';
+        $this->wpdb->term_taxonomy = 'wp_term_taxonomy';
+        $this->wpdb->terms = 'wp_terms';
 
         $dimensions = new Dimensions();
         $dimensions->add(new Meta($this->wpdb, [
             'compare' => '=',
             'key'     => $this->metaKey,
+        ]));
+        $dimensions->add(new Term($this->wpdb, [
+            'taxonomy' => $this->taxonomy,
         ]));
         
         $this->posts = new Posts($dimensions);
@@ -76,10 +84,13 @@ final class PostsTest extends TestCase
         $expectation = [];
 
         foreach ($searchTerms as $index => $searchTerm) {
-            $tableAlias = 'searchMeta' . $index;
+            $metaAlias = 'searchMeta' . $index;
+            $termAlias = 'searchTerm' . $index;
 
-            $wordExpectation = "INNER JOIN {$this->wpdb->postmeta} AS {$tableAlias} ";
-            $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$tableAlias}.post_id)";
+            $wordExpectation = "INNER JOIN {$this->wpdb->postmeta} AS {$metaAlias} ";
+            $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$metaAlias}.post_id) ";
+            $wordExpectation .= "INNER JOIN {$this->wpdb->term_relationships} AS {$termAlias} ";
+            $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$termAlias}.object_id)";
 
             $expectation[] = $wordExpectation;
         }
@@ -101,10 +112,90 @@ final class PostsTest extends TestCase
 
     public function testSearch()
     {
+        $searchTerms = ['Testman', 'theTester'];
+        $fakeTermIds = [1, 9];
+        $expectations = [];
+
+        foreach ($searchTerms as $index => $searchTerm) {
+            $expectations[] = "searchMeta{$index}.meta_key  %s AND searchMeta{$index}.meta_value LIKE %s";
+
+            $termIds = implode(',', $fakeTermIds);
+            $expectations[] = "searchTerm{$index}.term_taxonomy_id IN ({$termIds})";
+        }
+
+        WP_Mock::wpPassthruFunction('absint', ['times' => (count($fakeTermIds) * count($searchTerms))]);
+
+        $this->wpdb->shouldReceive('esc_like')
+            ->times((count($searchTerms) * 2))
+            ->andReturnUsing(function ($searchWord) {
+                return $searchWord;
+            });
+
+        $this->wpdb->shouldReceive('prepare')
+            ->times((count($searchTerms) * 2))
+            ->andReturnUsing(function ($sql) {
+                return $sql;
+            });
+
+        $this->wpdb->shouldReceive('get_col')
+            ->times(count($searchTerms))
+            ->andReturn($fakeTermIds);
+
+        $result = $this->search($searchTerms);
+
+        foreach ($expectations as $expectation) {
+            $this->assertContains($expectation, $result);
+        }
+    }
+
+    public function testSearchWithoutSearch()
+    {
+        $expectation = '';
+        $result = $this->posts->search('', $this->getQuery(false));
+
+        $this->assertEquals($expectation, $result);
+    }
+
+    public function testSearchWithoutTermHit()
+    {
+        $dimensions = new Dimensions();
+        $dimensions->add(new Term($this->wpdb, [
+            'taxonomy' => $this->taxonomy,
+        ]));
+
+        $fakeTermIds = [];
+        $searchTerms = ['Testterm', 'AnotherQuery'];
+
+        $this->wpdb->shouldReceive('esc_like')
+            ->times(count($searchTerms))
+            ->andReturnUsing(function ($searchWord) {
+                return $searchWord;
+            });
+
+        $this->wpdb->shouldReceive('prepare')
+            ->times(count($searchTerms))
+            ->andReturnUsing(function ($sql) {
+                return $sql;
+            });
+
+        $this->wpdb->shouldReceive('get_col')
+            ->times(count($searchTerms))
+            ->andReturn($fakeTermIds);
+
+        $result = $this->search(['Testman', 'theTester'], new Posts($dimensions));
+
+        $this->assertNotContains('OR ()', $result);
+    }
+
+    private function search(array $searchTerms, Posts $posts = null)
+    {
+        if (! $posts) {
+            $posts = $this->posts;
+        }
+
         $and = " AND ";
         $or = " OR ";
 
-        $searchTerms = ['Testman', 'theTester'];
         $baseSql = $and . "(";
 
         foreach ($searchTerms as $searchTerm) {
@@ -118,36 +209,7 @@ final class PostsTest extends TestCase
         $baseSql = mb_substr($baseSql, 0, mb_strlen($baseSql) - mb_strlen($or));
         $baseSql .= ")";
 
-        $expectations = [];
-
-        foreach ($searchTerms as $index => $searchTerm) {
-            $expectations[] = "searchMeta{$index}.meta_key  %s AND searchMeta{$index}.meta_value LIKE %s";
-        }
-
-        $this->wpdb->shouldReceive('esc_like')
-            ->andReturnUsing(function ($searchWord) {
-                return $searchWord;
-            });
-
-        $this->wpdb->shouldReceive('prepare')
-            ->times(count($searchTerms))
-            ->andReturnUsing(function ($sql) {
-                return $sql;
-            });
-
-        $result = $this->posts->search($baseSql, $this->getQuery(true, $searchTerms));
-
-        foreach ($expectations as $expectation) {
-            $this->assertContains($expectation, $result);
-        }
-    }
-
-    public function testSearchWithoutSearch()
-    {
-        $expectation = '';
-        $result = $this->posts->search('', $this->getQuery(false));
-
-        $this->assertEquals($expectation, $result);
+        return $posts->search($baseSql, $this->getQuery(true, $searchTerms));
     }
 
     private function getQuery($isSearch = true, $terms = ['Testman', 'mcTest'])

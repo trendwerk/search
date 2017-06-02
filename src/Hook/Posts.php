@@ -75,6 +75,10 @@ final class Posts
 
             $searches = array_filter($searches);
 
+            if (count($searches) === 0) {
+                continue;
+            }
+
             $search = '(' . implode($or, $searches) . ')' . $or;
 
             $clause = preg_replace('/' . $or . '/', $or . $search, $clause, 1);
