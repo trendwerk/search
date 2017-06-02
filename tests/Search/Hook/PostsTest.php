@@ -4,6 +4,7 @@ namespace Trendwerk\Search\Test;
 use Mockery;
 use Trendwerk\Search\Dimension\Dimensions;
 use Trendwerk\Search\Dimension\Meta;
+use Trendwerk\Search\Dimension\Term;
 use Trendwerk\Search\Hook\Posts;
 use WP_Mock;
 
@@ -11,6 +12,7 @@ final class PostsTest extends TestCase
 {
     private $metaKey = 'lastName';
     private $posts;
+    private $taxonomy = 'taxonomyName';
     private $wpdb;
 
     public function setUp()
@@ -20,11 +22,17 @@ final class PostsTest extends TestCase
         $this->wpdb = Mockery::mock('wpdb');
         $this->wpdb->postmeta = 'wp_postmeta';
         $this->wpdb->posts = 'wp_posts';
+        $this->wpdb->term_relationships = 'wp_term_relationships';
+        $this->wpdb->term_taxonomy = 'wp_term_taxonomy';
+        $this->wpdb->terms = 'wp_terms';
 
         $dimensions = new Dimensions();
         $dimensions->add(new Meta($this->wpdb, [
             'compare' => '=',
             'key'     => $this->metaKey,
+        ]));
+        $dimensions->add(new Term($this->wpdb, [
+            'taxonomy' => $this->taxonomy,
         ]));
         
         $this->posts = new Posts($dimensions);
@@ -76,10 +84,13 @@ final class PostsTest extends TestCase
         $expectation = [];
 
         foreach ($searchTerms as $index => $searchTerm) {
-            $tableAlias = 'searchMeta' . $index;
+            $metaAlias = 'searchMeta' . $index;
+            $termAlias = 'searchTerm' . $index;
 
-            $wordExpectation = "INNER JOIN {$this->wpdb->postmeta} AS {$tableAlias} ";
-            $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$tableAlias}.post_id)";
+            $wordExpectation = "INNER JOIN {$this->wpdb->postmeta} AS {$metaAlias} ";
+            $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$metaAlias}.post_id) ";
+            $wordExpectation .= "INNER JOIN {$this->wpdb->term_relationships} AS {$termAlias} ";
+            $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$termAlias}.object_id)";
 
             $expectation[] = $wordExpectation;
         }
@@ -105,6 +116,7 @@ final class PostsTest extends TestCase
         $or = " OR ";
 
         $searchTerms = ['Testman', 'theTester'];
+        $fakeTermIds = [1, 9];
         $baseSql = $and . "(";
 
         foreach ($searchTerms as $searchTerm) {
@@ -122,18 +134,28 @@ final class PostsTest extends TestCase
 
         foreach ($searchTerms as $index => $searchTerm) {
             $expectations[] = "searchMeta{$index}.meta_key  %s AND searchMeta{$index}.meta_value LIKE %s";
+            $termIds = implode(',', $fakeTermIds);
+            $expectations[] = "searchTerm{$index}.term_taxonomy_id IN ({$termIds})";
         }
 
+        WP_Mock::wpPassthruFunction('absint', ['times' => (count($fakeTermIds) * count($searchTerms))]);
+
         $this->wpdb->shouldReceive('esc_like')
+            ->times((count($searchTerms) * 2))
             ->andReturnUsing(function ($searchWord) {
                 return $searchWord;
             });
 
         $this->wpdb->shouldReceive('prepare')
-            ->times(count($searchTerms))
+            ->times((count($searchTerms) * 2))
             ->andReturnUsing(function ($sql) {
                 return $sql;
             });
+
+
+        $this->wpdb->shouldReceive('get_col')
+            ->times(count($searchTerms))
+            ->andReturn($fakeTermIds);
 
         $result = $this->posts->search($baseSql, $this->getQuery(true, $searchTerms));
 
