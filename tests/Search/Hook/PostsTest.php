@@ -166,7 +166,6 @@ final class PostsTest extends TestCase
                 return $sql;
             });
 
-
         $this->wpdb->shouldReceive('get_col')
             ->times(count($searchTerms))
             ->andReturn($fakeTermIds);
