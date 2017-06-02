@@ -89,7 +89,7 @@ final class PostsTest extends TestCase
 
             $wordExpectation = "INNER JOIN {$this->wpdb->postmeta} AS {$metaAlias} ";
             $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$metaAlias}.post_id) ";
-            $wordExpectation .= "INNER JOIN {$this->wpdb->term_relationships} AS {$termAlias} ";
+            $wordExpectation .= "LEFT JOIN {$this->wpdb->term_relationships} AS {$termAlias} ";
             $wordExpectation .= "ON ({$this->wpdb->posts}.ID = {$termAlias}.object_id)";
 
             $expectation[] = $wordExpectation;
