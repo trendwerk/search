@@ -123,7 +123,25 @@ final class PostsTest extends TestCase
             $expectations[] = "searchTerm{$index}.term_taxonomy_id IN ({$termIds})";
         }
 
-        $this->search($searchTerms, $expectations, $fakeTermIds);
+        WP_Mock::wpPassthruFunction('absint', ['times' => (count($fakeTermIds) * count($searchTerms))]);
+
+        $this->wpdb->shouldReceive('esc_like')
+            ->times((count($searchTerms) * 2))
+            ->andReturnUsing(function ($searchWord) {
+                return $searchWord;
+            });
+
+        $this->wpdb->shouldReceive('prepare')
+            ->times((count($searchTerms) * 2))
+            ->andReturnUsing(function ($sql) {
+                return $sql;
+            });
+
+        $this->wpdb->shouldReceive('get_col')
+            ->times(count($searchTerms))
+            ->andReturn($fakeTermIds);
+
+        $this->search($searchTerms, $expectations);
     }
 
     public function testSearchWithoutSearch()
@@ -141,12 +159,30 @@ final class PostsTest extends TestCase
             'taxonomy' => $this->taxonomy,
         ]));
 
-        $expectations = [' '];
+        $fakeTermIds = [];
+        $searchTerms = ['Testterm', 'AnotherQuery'];
+        $expectations = ['OR ()'];
 
-        $this->search(['Testman', 'theTester'], $expectations, [], new Posts($dimensions));
+        $this->wpdb->shouldReceive('esc_like')
+            ->times(count($searchTerms))
+            ->andReturnUsing(function ($searchWord) {
+                return $searchWord;
+            });
+
+        $this->wpdb->shouldReceive('prepare')
+            ->times(count($searchTerms))
+            ->andReturnUsing(function ($sql) {
+                return $sql;
+            });
+
+        $this->wpdb->shouldReceive('get_col')
+            ->times(count($searchTerms))
+            ->andReturn($fakeTermIds);
+
+        $this->search(['Testman', 'theTester'], $expectations, new Posts($dimensions));
     }
 
-    private function search(array $searchTerms, array $expectations, array $fakeTermIds, Posts $posts = null)
+    private function search(array $searchTerms, array $expectations, Posts $posts = null)
     {
         if (! $posts) {
             $posts = $this->posts;
@@ -167,24 +203,6 @@ final class PostsTest extends TestCase
 
         $baseSql = mb_substr($baseSql, 0, mb_strlen($baseSql) - mb_strlen($or));
         $baseSql .= ")";
-
-        WP_Mock::wpPassthruFunction('absint', ['times' => (count($fakeTermIds) * count($searchTerms))]);
-
-        $this->wpdb->shouldReceive('esc_like')
-            ->times((count($searchTerms) * 2))
-            ->andReturnUsing(function ($searchWord) {
-                return $searchWord;
-            });
-
-        $this->wpdb->shouldReceive('prepare')
-            ->times((count($searchTerms) * 2))
-            ->andReturnUsing(function ($sql) {
-                return $sql;
-            });
-
-        $this->wpdb->shouldReceive('get_col')
-            ->times(count($searchTerms))
-            ->andReturn($fakeTermIds);
 
         $result = $posts->search($baseSql, $this->getQuery(true, $searchTerms));
 
