@@ -24,7 +24,7 @@ final class Term implements Dimension
     {
         $tableAlias = $this->tableAlias . $aliasCount;
 
-        $sql = "INNER JOIN {$this->wpdb->term_relationships} AS {$tableAlias} ";
+        $sql = "LEFT JOIN {$this->wpdb->term_relationships} AS {$tableAlias} ";
         $sql .= "ON ({$this->wpdb->posts}.ID = {$tableAlias}.object_id)";
 
         return $sql;

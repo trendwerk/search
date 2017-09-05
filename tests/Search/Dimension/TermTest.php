@@ -33,7 +33,7 @@ final class TermTest extends TestCase
         $tableAliasCount = 2;
         $tableAlias = $this->tableAlias . $tableAliasCount;
 
-        $expectation = "INNER JOIN {$this->wpdb->term_relationships} AS {$tableAlias} ";
+        $expectation = "LEFT JOIN {$this->wpdb->term_relationships} AS {$tableAlias} ";
         $expectation .= "ON ({$this->wpdb->posts}.ID = {$tableAlias}.object_id)";
 
         $term = $this->create('taxonomyName');
