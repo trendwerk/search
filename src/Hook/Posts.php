@@ -66,6 +66,10 @@ final class Posts
         $andClauses = array_values(array_filter(explode($and, $sql)));
 
         foreach ($andClauses as $index => &$clause) {
+            if (! isset($searchWords[$index])) {
+                continue;
+            }
+
             $searchWord = $searchWords[$index];
             $searches = [];
 
