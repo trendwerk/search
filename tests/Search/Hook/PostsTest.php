@@ -207,6 +207,7 @@ final class PostsTest extends TestCase
         }
 
         $baseSql = mb_substr($baseSql, 0, mb_strlen($baseSql) - mb_strlen($or));
+        $baseSql .= $and . "SOME OTHER QUERY";
         $baseSql .= ")";
 
         return $posts->search($baseSql, $this->getQuery(true, $searchTerms));
